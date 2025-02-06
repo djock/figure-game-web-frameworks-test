@@ -12,7 +12,7 @@ const RowContainer = styled.div`
     display: flex; /* Arrange squares in a row */
 `;
 
-function Grid({ grid, onSquareClick }) {
+function Grid({ grid, onSquareClick , connectedToBottom}) {
     return (
         <GridContainer>
             {grid.map((row, rowIndex) => (
@@ -24,6 +24,7 @@ function Grid({ grid, onSquareClick }) {
                             onClick={() => onSquareClick(rowIndex, colIndex)}
                             willDisappear={cell ? cell.willDisappear : false}
                             bottomRow={rowIndex === grid.length - 1}
+                            connectedToBottom={connectedToBottom[rowIndex]?.[colIndex]}
                         />
                     ))}
                 </RowContainer>

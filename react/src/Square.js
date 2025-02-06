@@ -10,7 +10,7 @@ const SquareButton = styled.button`
   cursor: pointer;
   margin: 5px;
   position: relative;
-  box-shadow: ${props => props.bottomRow ? `0 0 10px ${props.color}` : 'none'}; /* Apply glow only for bottomRow */
+  box-shadow: ${props =>   (props.connectedToBottom || props.bottomRow) ?   `0 0 10px ${props.color}` :   'none'};
 
   &:hover {
     opacity: 0.8;
@@ -79,8 +79,18 @@ const SquareButton = styled.button`
   `}
 `;
 
-function Square({ color, onClick, bottomRow, willDisappear }) {
-  return <SquareButton color={color} onClick={onClick} bottomRow={bottomRow} willDisappear={willDisappear} disabled={!color} />;
+function Square({ color, onClick, bottomRow, connectedToBottom, willDisappear }) {
+  return (
+    <SquareButton 
+      color={color} 
+      onClick={onClick} 
+      bottomRow={bottomRow}
+      connectedToBottom={connectedToBottom}
+      willDisappear={willDisappear} 
+      disabled={!color} 
+    />
+  );
 }
+
 
 export default Square;
