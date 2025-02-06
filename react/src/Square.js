@@ -2,11 +2,11 @@ import React from 'react';
 import styled, { css } from 'styled-components';
 
 const SquareButton = styled.button`
-  width: 70px;
-  height: 70px;
+  width: 68px;
+  height: 68px;
   background-color: ${props => props.willDisappear ? props.color : 'transparent'};
-  border: 2px solid ${props => props.color || 'transparent'};
-  border-radius: 16px;
+  border: 6px solid ${props => props.color || 'transparent'};
+  border-radius: 25px;
   cursor: pointer;
   margin: 5px;
   position: relative;

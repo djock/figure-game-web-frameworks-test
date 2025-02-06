@@ -37,6 +37,7 @@ function App() {
   const [rows, setRows] = useState(5); // Fixed grid size based on the image
   const [cols, setCols] = useState(5);
   const [tapCount, setTapCount] = useState(9); // Set number of taps
+  const [triesCount, setTries] = useState(0);
 
   const generateGrid = useCallback(() => {
     const initialGrid = [
@@ -114,6 +115,8 @@ function App() {
   }, [cols, rows]);
 
   const handleSquareClick = useCallback((row, col) => {
+    if (row !== rows - 1) return; // Add this line to restrict to bottom row
+
     if (tapCount <= 0) return; // No more taps allowed
 
     const color = grid[row][col];
@@ -151,6 +154,7 @@ function App() {
     generateGrid();
     setGameState('playing');
     setTapCount(9); // Reset tap count
+    setTries(0); // reset tries
   };
 
   const retryGame = () => {
@@ -158,6 +162,7 @@ function App() {
     generateGrid();
     setGameState('playing');
     setTapCount(9); // Reset tap count
+    setTries(prevTries => prevTries + 1);
   };
 
   useEffect(() => {
@@ -166,15 +171,35 @@ function App() {
     }
   }, [gameState, generateGrid]);
 
+  function getOrdinal(n) {
+    // Handle special cases for 11th, 12th, and 13th
+    const remainder100 = n % 100;
+    if (remainder100 >= 11 && remainder100 <= 13) return `${n}th`;
+    
+    // Determine the suffix based on the last digit
+    const remainder10 = n % 10;
+    switch (remainder10) {
+      case 1:
+        return `${n}st`;
+      case 2:
+        return `${n}nd`;
+      case 3:
+        return `${n}rd`;
+      default:
+        return `${n}th`;
+    }
+  }
+  
+
   return (
       <AppContainer>
-        <h1>Figure Game React</h1>
-        <h2>{tapCount} moves left</h2>
+        <h1>{tapCount} moves left</h1>
 
         {gameState === 'playing' && (
             <>
               <Grid grid={grid} onSquareClick={handleSquareClick} />
               {gameOver && <p>Game Over! No more moves.</p>}
+              <h2>{getOrdinal(triesCount)} try</h2>
             </>
         )}
 
