@@ -1,0 +1,117 @@
+# General OS and Editor artifacts
+######################################
+.DS_Store
+Thumbs.db
+ehthumbs.db
+*.swp
+._*
+.Spotlight-V100
+.Trashes
+
+# Node.js and Package Managers
+######################################
+node_modules/
+**/node_modules/
+jspm_packages/
+**/jspm_packages/
+yarn-error.log
+yarn.lock
+package-lock.json
+pnpm-lock.yaml
+
+# IDE and Editor Specific
+######################################
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw*
+
+# Build Artifacts
+######################################
+dist/
+**/dist/
+build/
+**/build/
+out/
+**/out/
+tmp/
+**/tmp/
+.tmp/
+**/_tmp/
+.cache/
+**/_cache/
+coverage/
+**/coverage/
+*.log
+*.backup*
+*.bak
+*.orig
+*.rpt
+*.map
+*.d.ts
+
+# Component Specific
+######################################
+
+# React
+**/public/bundles/  # If you bundle directly into public
+**/build/static/js/*.map
+**/build/static/css/*.map
+
+# Vue
+**/dist/*.map
+
+# Angular
+**/dist/*.js.map
+**/dist/*.css.map
+
+# Svelte
+**/public/build/*.map # Adjust if your Svelte build output is different
+
+# Monorepo Specific (Lerna, Nx, Turborepo etc.)
+######################################
+lerna-debug.log
+lerna.json
+nx.json
+.nx/cache
+**/generated/
+**/lib/
+**/esm/
+**/types/
+
+# Other
+######################################
+.env
+.env.*
+*.pem
+*.key
+*.cer
+*.pfx
+
+# Temporary files
+######################################
+*~
+# Log and temp files
+logs
+*.log
+tmp
+*.tmp
+*.swp
+*.bak
+*.lock
+
+# Optional:  If you have storybook
+storybook-static/
+**/storybook-static/
+
+# Optional: If you use Jest snapshots
+**/__snapshots__/
+
+# Optional: If you use Cypress
+cypress/videos/
+cypress/screenshots/
+**/cypress/videos/
+**/cypress/screenshots/
