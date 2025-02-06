@@ -8,7 +8,7 @@ const SquareButton = styled.button`
   border: 6px solid ${props => props.color || 'transparent'};
   border-radius: 25px;
   cursor: pointer;
-  margin: 5px;
+  margin: 6px;
   position: relative;
   box-shadow: ${props => props.bottomRow ? `0 0 10px ${props.color}` : 'none'}; /* Apply glow only for bottomRow */
 

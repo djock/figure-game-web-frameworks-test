@@ -36,16 +36,16 @@ function App() {
   const [gameState, setGameState] = useState('playing'); // 'playing', 'gameOver'
   const [rows, setRows] = useState(5); // Fixed grid size based on the image
   const [cols, setCols] = useState(5);
-  const [tapCount, setTapCount] = useState(9); // Set number of taps
+  const [tapCount, setTapCount] = useState(8); // Set number of taps
   const [triesCount, setTries] = useState(0);
 
   const generateGrid = useCallback(() => {
     const initialGrid = [
-      ['#01FFDD', '#FFEE33', '#FFEE33', '#FFEE33', '#01FFDD'],
-      ['#FFEE33', '#FF66FF', '#01FFDD', '#01FFDD', '#FF66FF'],
-      ['#FFEE33', '#FF66FF', '#FF66FF', '#FFEE33', '#FF66FF'],
-      ['#FFEE33', '#FF66FF', 'white', '#FF66FF', '#01FFDD'],
-      ['white', 'white', '#FFEE33', '#FFEE33', '#FFEE33'],
+      ['#01FFDD', 'white', '#FF66FF', '#FF66FF', '#FF66FF'],
+      ['#01FFDD', '#FF66FF', 'white', 'white', '#FFEE33'],
+      ['#FFEE33', '#01FFDD', 'white', '#FFEE33', '#FF66FF'],
+      ['#FFEE33', 'white', '#01FFDD', '#01FFDD', '#FFEE33'],
+      ['#FFEE33', '#01FFDD', 'white', '#FFEE33', 'white']
     ];
     setGrid(initialGrid);
   }, []);
@@ -153,7 +153,7 @@ function App() {
     setGameOver(false);
     generateGrid();
     setGameState('playing');
-    setTapCount(9); // Reset tap count
+    setTapCount(8); // Reset tap count
     setTries(0); // reset tries
   };
 
@@ -161,7 +161,7 @@ function App() {
     setGameOver(false);
     generateGrid();
     setGameState('playing');
-    setTapCount(9); // Reset tap count
+    setTapCount(8); // Reset tap count
     setTries(prevTries => prevTries + 1);
   };
 
