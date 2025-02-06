@@ -1,18 +1,23 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import Grid from './Grid';
-import Scoreboard from './Scoreboard';
-import StartScreen from './StartScreen';
 import GameOverScreen from './GameOverScreen';
 import styled from 'styled-components';
+import './App.css'; // Import the CSS file
 
 const AppContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
   text-align: center;
   font-family: sans-serif;
+  background-color: #06066A;
 `;
 
-const NextLevelButton = styled.button`
+const RetryButton = styled.button`
   padding: 10px 20px;
-  background-color: #4CAF50;
+  background-color: #f44336;
   color: white;
   border: none;
   cursor: pointer;
@@ -20,33 +25,29 @@ const NextLevelButton = styled.button`
   margin-top: 20px;
 
   &:hover {
-    background-color: #3e8e41;
+    background-color: #d32f2f;
   }
 `;
 
 function App() {
   const [grid, setGrid] = useState([]);
-  const [score, setScore] = useState(0);
-  const [level, setLevel] = useState(1);
   const [gameOver, setGameOver] = useState(false);
-  const [gameState, setGameState] = useState('start'); // 'start', 'playing', 'gameOver'
+  const [gameState, setGameState] = useState('playing'); // 'playing', 'gameOver'
   const [rows, setRows] = useState(5); // Fixed grid size based on the image
   const [cols, setCols] = useState(5);
-  const [colors, setColors] = useState(['white', 'yellow', 'pink', 'turquoise']); // Simplified color scheme
+  const [tapCount, setTapCount] = useState(9); // Set number of taps
 
-  // useCallback is used to memoize functions, preventing unnecessary re-renders
   const generateGrid = useCallback(() => {
     const initialGrid = [
-      ['turquoise', 'yellow', 'yellow', 'yellow', 'turquoise'],
-      ['yellow', 'pink', 'turquoise', 'turquoise', 'pink'],
-      ['yellow', 'pink', 'pink', 'yellow', 'pink'],
-      ['yellow', 'pink', 'white', 'pink', 'turquoise'],
-      ['white', 'white', 'yellow', 'yellow', 'yellow'],
+      ['#01FFDD', '#FFEE33', '#FFEE33', '#FFEE33', '#01FFDD'],
+      ['#FFEE33', '#FF66FF', '#01FFDD', '#01FFDD', '#FF66FF'],
+      ['#FFEE33', '#FF66FF', '#FF66FF', '#FFEE33', '#FF66FF'],
+      ['#FFEE33', '#FF66FF', 'white', '#FF66FF', '#01FFDD'],
+      ['white', 'white', '#FFEE33', '#FFEE33', '#FFEE33'],
     ];
     setGrid(initialGrid);
   }, []);
 
-  // useCallback is used to memoize functions, preventing unnecessary re-renders
   const findConnectedSquares = useCallback((grid, row, col, color, visited) => {
     const rows = grid.length;
     const cols = grid[0].length;
@@ -71,7 +72,6 @@ function App() {
     return connectedSquares;
   }, []);
 
-  // useCallback is used to memoize functions, preventing unnecessary re-renders
   const collapseGrid = useCallback((currentGrid) => {
     const newGrid = currentGrid.map(() => Array(cols).fill(null)); // Initialize an empty grid
 
@@ -97,7 +97,6 @@ function App() {
     return newGrid;
   }, [cols, rows]);
 
-  // useCallback is used to memoize functions, preventing unnecessary re-renders
   const checkGameOver = useCallback((currentGrid) => {
     for (let row = 0; row < rows; row++) {
       for (let col = 0; col < cols; col++) {
@@ -114,10 +113,7 @@ function App() {
   }, [cols, rows]);
 
   const handleSquareClick = useCallback((row, col) => {
-    // Only allow clicks on the bottom row
-    if (row !== rows - 1) {
-      return;
-    }
+    if (tapCount <= 0) return; // No more taps allowed
 
     const color = grid[row][col];
     if (!color) return; // If the square is already empty
@@ -125,98 +121,73 @@ function App() {
     const visited = grid.map(() => Array(cols).fill(false));
     const connectedSquares = findConnectedSquares(grid, row, col, color, visited);
 
-    let newGrid;
-    let removedCount;
+    let newGrid = grid.map(gridRow => gridRow.map(cell => ({ color: cell, willDisappear: false }))); // Create a copy of the grid
 
-    if (connectedSquares.length > 1) {
-      // If there are connected squares, remove all of them
-      newGrid = grid.map(gridRow => [...gridRow]); // Create a copy of the grid
-      connectedSquares.forEach(({ row, col }) => {
-        newGrid[row][col] = null;
-      });
-      removedCount = connectedSquares.length;
-    } else {
-      // If it's a single square, remove only that square
-      newGrid = grid.map(gridRow => [...gridRow]);
-      newGrid[row][col] = null;
-      removedCount = 1;
-    }
+    connectedSquares.forEach(({ row, col }) => {
+      newGrid[row][col].willDisappear = true;
+    });
 
     setGrid(newGrid);
 
     // Collapse the grid
-    const collapsedGrid = collapseGrid(newGrid);
+    const collapsedGrid = collapseGrid(newGrid.map(row => row.map(cell => (cell && cell.willDisappear) ? null : cell.color)));
     setGrid(collapsedGrid);
 
-    // Update score
-    setScore(score + removedCount * 10);
+    // Decrement tap count
+    setTapCount(tapCount - 1);
 
     // Check for game over
     if (checkGameOver(collapsedGrid)) {
       setGameOver(true);
       setGameState('gameOver');
+    } else if (tapCount - 1 <= 0) {
+      setGameState('retry');
     }
-  }, [checkGameOver, collapseGrid, findConnectedSquares, grid, rows, score]);
-
-  const startNewLevel = () => {
-    setLevel(prevLevel => prevLevel + 1);
-    setScore(prevScore => prevScore + 500); // Bonus for completing level
-    setRows(prevRows => Math.min(15, prevRows + 1)); // Increase grid size (max 15)
-    setCols(prevCols => Math.min(15, prevCols + 1));
-    if (level % 3 === 0) {
-      setColors(prevColors => {
-        const newColor = '#' + Math.floor(Math.random()*16777215).toString(16);
-        return [...prevColors, newColor]; // Add a new random color every 3 levels
-      });
-    }
-    generateGrid(); // Generate new grid for the level
-  };
+  }, [checkGameOver, collapseGrid, findConnectedSquares, grid, cols, tapCount, rows]);
 
   const startGame = () => {
-    setScore(0);
-    setLevel(1);
     setGameOver(false);
-    setRows(5); // Reset grid size to initial value
-    setCols(5);
-    setColors(['white', 'yellow', 'pink', 'turquoise']); // Reset colors
     generateGrid();
     setGameState('playing');
+    setTapCount(9); // Reset tap count
   };
 
-  const endGame = () => {
-    setGameState('gameOver');
+  const retryGame = () => {
+    setGameOver(false);
+    generateGrid();
+    setGameState('playing');
+    setTapCount(9); // Reset tap count
   };
 
-  // Initialize grid when game starts or level changes
   useEffect(() => {
     if (gameState === 'playing') {
       generateGrid();
     }
-  }, [gameState, level, generateGrid]);
+  }, [gameState, generateGrid]);
 
   return (
-    <AppContainer>
-      <h1>Color Collapse Game</h1>
+      <AppContainer>
+        <h1>Figure Game React</h1>
+        <h2>{tapCount} moves left</h2>
 
-      {gameState === 'start' && <StartScreen onStart={startGame} />}
+        {gameState === 'playing' && (
+            <>
+              <Grid grid={grid} onSquareClick={handleSquareClick} />
+              {gameOver && <p>Game Over! No more moves.</p>}
+            </>
+        )}
 
-      {gameState === 'playing' && (
-        <>
-          <Scoreboard score={score} level={level} />
-          <Grid grid={grid} onSquareClick={handleSquareClick} />
-          {gameOver ? (
-            <p>Game Over! No more moves.</p>
-          ) : (
-            <NextLevelButton onClick={startNewLevel}>Next Level</NextLevelButton>
-          )}
-          <button onClick={endGame}>End Game</button> {/* Example end game button */}
-        </>
-      )}
+        {gameState === 'retry' && (
+            <>
+              <p>Out of taps! Try again.</p>
+              <RetryButton onClick={retryGame}>Retry</RetryButton>
+            </>
+        )}
 
-      {gameState === 'gameOver' && (
-        <GameOverScreen score={score} onRestart={startGame} />
-      )}
-    </AppContainer>
+        {gameState === 'gameOver' && (
+            <GameOverScreen onRestart={startGame} />
+        )}
+      </AppContainer>
   );
 }
 

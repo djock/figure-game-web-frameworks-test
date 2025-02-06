@@ -3,13 +3,13 @@ import Square from './Square';
 import styled from 'styled-components';
 
 const GridContainer = styled.div`
-  display: flex;
-  flex-direction: column; /* Stack rows vertically */
-  align-items: center; /* Center the grid items */
+    display: flex;
+    flex-direction: column; /* Stack rows vertically */
+    align-items: center; /* Center the grid items */
 `;
 
 const RowContainer = styled.div`
-  display: flex; /* Arrange squares in a row */
+    display: flex; /* Arrange squares in a row */
 `;
 
 function Grid({ grid, onSquareClick }) {
@@ -17,11 +17,13 @@ function Grid({ grid, onSquareClick }) {
         <GridContainer>
             {grid.map((row, rowIndex) => (
                 <RowContainer key={rowIndex}>
-                    {row.map((color, colIndex) => (
+                    {row.map((cell, colIndex) => (
                         <Square
                             key={`${rowIndex}-${colIndex}`}
-                            color={color}
+                            color={cell ? cell.color || cell : null}
                             onClick={() => onSquareClick(rowIndex, colIndex)}
+                            willDisappear={cell ? cell.willDisappear : false}
+                            bottomRow={rowIndex === grid.length - 1}
                         />
                     ))}
                 </RowContainer>
