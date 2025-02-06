@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import Grid from './Grid';
 import GameOverScreen from './GameOverScreen';
@@ -36,7 +37,6 @@ function App() {
   const [rows, setRows] = useState(5); // Fixed grid size based on the image
   const [cols, setCols] = useState(5);
   const [tapCount, setTapCount] = useState(9); // Set number of taps
-  const [connectedToBottom, setConnectedToBottom] = useState([]);
 
   const generateGrid = useCallback(() => {
     const initialGrid = [
@@ -45,56 +45,9 @@ function App() {
       ['#FFEE33', '#FF66FF', '#FF66FF', '#FFEE33', '#FF66FF'],
       ['#FFEE33', '#FF66FF', 'white', '#FF66FF', '#01FFDD'],
       ['white', 'white', '#FFEE33', '#FFEE33', '#FFEE33'],
-    ].map(row => row.map(color => ({ color }))); // Store as objects
+    ];
     setGrid(initialGrid);
   }, []);
-  
-  
-
-  // Add this utility function in App component
-  const findBottomConnected = (grid) => {
-    // Add null checks for grid structure
-    if (!grid || grid.length === 0 || grid[0].length === 0) return [];
-    
-    const connectedToBottom = Array(rows).fill().map(() => Array(cols).fill(false));
-    const visited = Array(rows).fill().map(() => Array(cols).fill(false));
-  
-    // Verify bottom row exists before accessing
-    const bottomRow = rows - 1;
-    if (bottomRow >= grid.length) return connectedToBottom;
-  
-    for (let col = 0; col < cols; col++) {
-      // Add nested optional chaining
-      const cell = grid[bottomRow]?.[col];
-      if (cell) {
-        const color = cell.color || cell;
-        floodFill(bottomRow, col, color, connectedToBottom, visited, grid);
-      }
-    }
-    return connectedToBottom;
-  };
-  
-// Helper function for flood fill
-const floodFill = (row, col, targetColor, connectedToBottom, visited, grid) => {
-  // Add boundary checks and grid validation
-  if (row < 0 || row >= rows || col < 0 || col >= cols) return;
-  if (!grid[row] || visited[row][col]) return;
-
-  // Use optional chaining for color access
-  const currentColor = grid[row][col]?.color || grid[row][col];
-  if (currentColor !== targetColor) return;
-
-  visited[row][col] = true;
-  connectedToBottom[row][col] = true;
-
-  // Recursive calls with boundary checks
-  if (row + 1 < rows) floodFill(row + 1, col, targetColor, connectedToBottom, visited, grid);
-  if (row - 1 >= 0) floodFill(row - 1, col, targetColor, connectedToBottom, visited, grid);
-  if (col + 1 < cols) floodFill(row, col + 1, targetColor, connectedToBottom, visited, grid);
-  if (col - 1 >= 0) floodFill(row, col - 1, targetColor, connectedToBottom, visited, grid);
-};
-
-
 
   const findConnectedSquares = useCallback((grid, row, col, color, visited) => {
     const rows = grid.length;
@@ -121,32 +74,29 @@ const floodFill = (row, col, targetColor, connectedToBottom, visited, grid) => {
   }, []);
 
   const collapseGrid = useCallback((currentGrid) => {
-    const newGrid = Array.from({ length: rows }, () => Array(cols).fill(null));
-  
+    const newGrid = currentGrid.map(() => Array(cols).fill(null)); // Initialize an empty grid
+
+    // Iterate through each column
     for (let col = 0; col < cols; col++) {
       const columnValues = [];
-      // Collect non-disappearing cells with proper null checks
+
+      // Collect non-null values from the column
       for (let row = 0; row < rows; row++) {
-        const cell = currentGrid[row]?.[col];
-        if (cell && !cell.willDisappear) {
-          columnValues.push(cell.color || cell);
+        if (currentGrid[row][col] !== null) {
+          columnValues.push(currentGrid[row][col]);
         }
       }
-  
-      // Fill from bottom with valid values
+
+      // Fill the new grid column from the bottom up
       let newRow = rows - 1;
       for (let i = columnValues.length - 1; i >= 0; i--) {
-        if (newGrid[newRow]) {  // Add row existence check
-          newGrid[newRow][col] = columnValues[i];
-        }
+        newGrid[newRow][col] = columnValues[i];
         newRow--;
       }
     }
+
     return newGrid;
-  }, [rows, cols]);
-  
-  
-  
+  }, [cols, rows]);
 
   const checkGameOver = useCallback((currentGrid) => {
     for (let row = 0; row < rows; row++) {
@@ -164,61 +114,57 @@ const floodFill = (row, col, targetColor, connectedToBottom, visited, grid) => {
   }, [cols, rows]);
 
   const handleSquareClick = useCallback((row, col) => {
-    if (tapCount <= 0 || gameState !== 'playing') return;
-  
-    const cell = grid[row]?.[col];
-    if (!cell?.color && !cell) return;
-  
+    if (tapCount <= 0) return; // No more taps allowed
+
+    const color = grid[row][col];
+    if (!color) return; // If the square is already empty
+
     const visited = grid.map(() => Array(cols).fill(false));
-    const color = cell.color || cell;
     const connectedSquares = findConnectedSquares(grid, row, col, color, visited);
-  
-    // Create new grid with disappearance markers
-    const markedGrid = grid.map((gridRow, rIdx) => 
-      gridRow.map((cell, cIdx) => ({
-        ...cell,
-        willDisappear: connectedSquares.some(sq => sq.row === rIdx && sq.col === cIdx)
-      }))
-    );
-  
-    // Collapse first, then update state
-    const collapsedGrid = collapseGrid(markedGrid);
-    
+
+    let newGrid = grid.map(gridRow => gridRow.map(cell => ({ color: cell, willDisappear: false }))); // Create a copy of the grid
+
+    connectedSquares.forEach(({ row, col }) => {
+      newGrid[row][col].willDisappear = true;
+    });
+
+    setGrid(newGrid);
+
+    // Collapse the grid
+    const collapsedGrid = collapseGrid(newGrid.map(row => row.map(cell => (cell && cell.willDisappear) ? null : cell.color)));
     setGrid(collapsedGrid);
-    setTapCount(prev => prev - 1);
-    
-    // Update connection state AFTER grid update
-    setConnectedToBottom(findBottomConnected(collapsedGrid));
-    
-    // Check game state last
-    const gameEnded = checkGameOver(collapsedGrid);
-    setGameState(gameEnded ? 'gameOver' : tapCount === 1 ? 'retry' : 'playing');
-  }, [grid, tapCount, cols, rows, checkGameOver, collapseGrid, findConnectedSquares, gameState]);
-  
-  
+
+    // Decrement tap count
+    setTapCount(tapCount - 1);
+
+    // Check for game over
+    if (checkGameOver(collapsedGrid)) {
+      setGameOver(true);
+      setGameState('gameOver');
+    } else if (tapCount - 1 <= 0) {
+      setGameState('retry');
+    }
+  }, [checkGameOver, collapseGrid, findConnectedSquares, grid, cols, tapCount, rows]);
 
   const startGame = () => {
     setGameOver(false);
-    setGameState('playing');
     generateGrid();
-    setTapCount(9);
-    setConnectedToBottom(findBottomConnected(grid)); // Reset connection state
+    setGameState('playing');
+    setTapCount(9); // Reset tap count
   };
-  
+
   const retryGame = () => {
     setGameOver(false);
-    setGameState('playing');
     generateGrid();
-    setTapCount(9);
-    setConnectedToBottom(findBottomConnected(grid));
+    setGameState('playing');
+    setTapCount(9); // Reset tap count
   };
-  
+
   useEffect(() => {
     if (gameState === 'playing') {
       generateGrid();
-      setConnectedToBottom(findBottomConnected(grid));
     }
-  }, [gameState, generateGrid, grid]);
+  }, [gameState, generateGrid]);
 
   return (
       <AppContainer>
@@ -227,11 +173,7 @@ const floodFill = (row, col, targetColor, connectedToBottom, visited, grid) => {
 
         {gameState === 'playing' && (
             <>
-              <Grid 
-                grid={grid} 
-                onSquareClick={handleSquareClick} 
-                connectedToBottom={connectedToBottom}
-              />
+              <Grid grid={grid} onSquareClick={handleSquareClick} />
               {gameOver && <p>Game Over! No more moves.</p>}
             </>
         )}
