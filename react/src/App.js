@@ -37,7 +37,7 @@ function App() {
   const [rows, setRows] = useState(5); // Fixed grid size based on the image
   const [cols, setCols] = useState(5);
   const [tapCount, setTapCount] = useState(8); // Set number of taps
-  const [triesCount, setTries] = useState(0);
+  const [triesCount, setTries] = useState(1`);
 
   const generateGrid = useCallback(() => {
     const initialGrid = [
