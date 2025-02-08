@@ -1,0 +1,8 @@
+<button
+  type="button"
+  aria-label="Cell button"
+  class="cell-button {{ colorClass }} {{ bottomRow ? 'bottom-row' : '' }}"
+  [ngStyle]="buttonStyleObj"
+  (click)="onClick()"
+  [disabled]="!color">
+</button>

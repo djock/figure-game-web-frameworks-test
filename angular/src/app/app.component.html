@@ -1,0 +1,18 @@
+<div class="app">
+  <div class="info">
+    <h2>Moves left: {{ movesLeft }}</h2>
+  </div>
+
+  <div class="grid">
+    <!-- Pass grid data and bind the cellClick event -->
+    <app-grid [grid]="grid" (cellClick)="handleCellClick($event.row, $event.col)"></app-grid>
+  </div>
+
+  <div class="controls" *ngIf="showRefresh">
+    <button (click)="resetGame()">Refresh</button>
+  </div>
+
+  <div class="controls" *ngIf="canShowTries">
+    <h2>{{ tryLabel }}</h2>
+  </div>
+</div>

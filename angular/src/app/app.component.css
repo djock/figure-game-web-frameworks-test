@@ -1,0 +1,36 @@
+/* Global styles (in styles.css) might include: */
+/* body {
+  background-color: #06066A;
+  margin: 0;
+  padding: 0;
+  font-family: sans-serif;
+} */
+
+.app {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+  
+  .info {
+    margin-bottom: 20px;
+    color: white;
+    font-size: 24px;
+  }
+  
+  .grid {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .controls {
+    margin-top: 20px;
+    text-align: center;
+  }
+  
+  h1, h2 {
+    color: white;
+  }
+  
